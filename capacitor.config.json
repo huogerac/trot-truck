@@ -1,0 +1,8 @@
+{
+  "appId": "com.vuecapacitor",
+  "appName": "vuecapacitor",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "vuecapacitor",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}
