@@ -1,6 +1,57 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+<script>
+import { Geolocation } from '@capacitor/geolocation';
+import { ForegroundService } from '@ionic-native/foreground-service';
+
+export default {
+  name: 'MyComponent',
+  mounted() {
+    // Inicialize o serviço em um local apropriado, como no evento 'mounted' do Vue
+    this.initForegroundService();
+  },
+  methods: {
+    async initForegroundService() {
+      try {
+        await ForegroundService.start('Trot Truck', 'Rastreio');
+
+        await ForegroundService.updateNotification({
+          title: 'Rastreando seu caminhão',
+          text: 'Olhe pra estrada amigo, seu rastreio está funcionando.',
+          icon: 'icon_name',
+        });
+
+
+        // Lógica adicional do serviço em primeiro plano
+      } catch (error) {
+        console.error('Erro ao iniciar o serviço em primeiro plano:', error);
+      }
+    },
+    cleanPosition() {
+    this.state.latitude = null;
+    this.state.longitude = null;
+    },
+    async getLocation() {
+      const coordinates = await Geolocation.getCurrentPosition();
+      this.state.latitude = coordinates.coords.latitude;
+      this.state.longitude = coordinates.coords.longitude;
+    },
+    segundosEmForeground() {
+        setInterval(() => {
+          this.segundos += 1
+          }, 1000);
+      }
+  },
+  data() {
+  return {
+    state: {
+      latitude: "",
+      longitude: "",
+    },
+    segundos: 0
+  }
+}
+};
+  
+
 </script>
 
 <template>
@@ -9,11 +60,19 @@ import HelloWorld from './components/HelloWorld.vue'
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
-
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
+        <button @click="getLocation()">Get my Lat & Long</button>
+        <button @click="cleanPosition()">Clean my last position</button>
+        <button @click="segundosEmForeground()"> Iniciar rastreio </button>
       </nav>
+      <p v-if="state.latitude">
+       LAT {{ state.latitude }}
+      </p>
+      <p v-if="state.longitude">
+       LONG {{ state.longitude }}
+      </p>
+      <p> rastreando há {{ segundos }}s
+      </p>
     </div>
   </header>
 
