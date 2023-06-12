@@ -1,78 +1,84 @@
 <script>
-import { Geolocation } from '@capacitor/geolocation';
-import { ForegroundService } from '@ionic-native/foreground-service';
+import { Geolocation } from '@capacitor/geolocation'
+import { ForegroundService } from '@ionic-native/foreground-service'
 
 export default {
   name: 'MyComponent',
   mounted() {
     // Inicialize o serviço em um local apropriado, como no evento 'mounted' do Vue
-    this.initForegroundService();
+    this.initForegroundService()
   },
   methods: {
     async initForegroundService() {
       try {
-        await ForegroundService.start('Trot Truck', 'Rastreio');
+        await ForegroundService.start('Trot Truck', 'Rastreio')
 
         await ForegroundService.updateNotification({
           title: 'Rastreando seu caminhão',
           text: 'Olhe pra estrada amigo, seu rastreio está funcionando.',
-          icon: 'icon_name',
-        });
-
+          icon: 'icon_name'
+        })
 
         // Lógica adicional do serviço em primeiro plano
       } catch (error) {
-        console.error('Erro ao iniciar o serviço em primeiro plano:', error);
+        console.error('Erro ao iniciar o serviço em primeiro plano:', error)
       }
     },
-    cleanPosition() {
-    this.state.latitude = null;
-    this.state.longitude = null;
+    async stopPosition() {
+      await ForegroundService.stop()
     },
     async getLocation() {
-      const coordinates = await Geolocation.getCurrentPosition();
-      this.state.latitude = coordinates.coords.latitude;
-      this.state.longitude = coordinates.coords.longitude;
+      const coordinates = await Geolocation.getCurrentPosition()
+      this.state.latitude = coordinates.coords.latitude
+      this.state.longitude = coordinates.coords.longitude
+      this.positions.push({
+        latitude: coordinates.coords.latitude,
+        longitude: coordinates.coords.longitude
+      })
     },
     segundosEmForeground() {
-        setInterval(() => {
-          this.segundos += 1
-          }, 1000);
-      }
+      setInterval(() => {
+        this.counter += 1
+        this.getLocation()
+      }, 20000)
+    }
   },
   data() {
-  return {
-    state: {
-      latitude: "",
-      longitude: "",
-    },
-    segundos: 0
+    return {
+      state: {
+        latitude: '',
+        longitude: ''
+      },
+      counter: 0,
+      positions: []
+    }
   }
 }
-};
-  
-
 </script>
 
 <template>
   <header>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" />
+
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
       <nav>
         <button @click="getLocation()">Get my Lat & Long</button>
-        <button @click="cleanPosition()">Clean my last position</button>
-        <button @click="segundosEmForeground()"> Iniciar rastreio </button>
+        <button @click="stopPosition()">Stop</button>
+        <button @click="segundosEmForeground()">Iniciar rastreio</button>
       </nav>
-      <p v-if="state.latitude">
-       LAT {{ state.latitude }}
-      </p>
-      <p v-if="state.longitude">
-       LONG {{ state.longitude }}
-      </p>
-      <p> rastreando há {{ segundos }}s
-      </p>
+      <p v-if="state.latitude">LAT {{ state.latitude }}</p>
+      <p v-if="state.longitude">LONG {{ state.longitude }}</p>
+      <p>pontos salvos {{ counter }}s</p>
+      <div>
+        <p v-for="(pos, index) in positions" :key="index">
+          {{ index }}: {{ pos.latitude }}, {{ pos.longitude }}
+        </p>
+      </div>
     </div>
   </header>
 
