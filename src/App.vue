@@ -40,7 +40,7 @@ export default {
       setInterval(() => {
         this.counter += 1
         this.getLocation()
-      }, 20000)
+      }, 6000)
     }
   },
   data() {
